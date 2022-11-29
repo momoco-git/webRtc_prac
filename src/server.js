@@ -17,24 +17,18 @@ const Io = SocketIo(server, {
 // const wss = new WebSocket.Server({ server });
 
 Io.on("connection", socket => {
-  socket["nickName"] = "Anon";
-  socket.on("nickName", nickName => (socket["nickName"] = nickName));
-  socket.on("enter_room", (roomName, done) => {
-    console.log("방이름", roomName);
-    socket.join(roomName);
-    console.log(socket.rooms);
-    socket.to(roomName).emit("welcome", socket.nickName);
+  socket.on("join_room", room => {
+    socket.join(room);
+    socket.to(room).emit("welcome");
   });
-  socket.on("disconnecting", () => {
-    socket.rooms.forEach(room => {
-      socket.to(room).emit("bye", socket.nickName);
-    });
+  socket.on("offer", (offer, roomName) => {
+    socket.to(roomName).emit("offer", offer);
   });
-  socket.on("new_message", (msg, room) => {
-    console.log(socket.nickName);
-    console.log(socket.rooms);
-    console.log(socket);
-    socket.to(room).emit("no1_message", `${socket.nickName}: ${msg}`);
+  socket.on("answer", (answer, roomName) => {
+    socket.to(roomName).emit("answer", answer);
+  });
+  socket.on("ice", (ice, roomName) => {
+    socket.to(roomName).emit("ice", ice);
   });
 });
 
